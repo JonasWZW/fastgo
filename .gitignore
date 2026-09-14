@@ -2,4 +2,5 @@
 *.exe
 *.test
 coverage.out
+.idea
 
