@@ -103,6 +103,76 @@ func Run(args []string, stdout, stderr io.Writer) int
 - 本项目当前只有标准库依赖，因此 `go mod tidy` 后可能没有 `go.sum`；这是正常现象。
 - 不要手工维护依赖块。添加/删除 import 后运行 `go mod tidy`，让工具链整理。
 
+## 发布到 GitHub：可执行程序与可导入库
+
+假设 GitHub 用户名为 `alice`，仓库名为 `fastgo`，则 module path 应为：
+
+```go
+module github.com/alice/fastgo
+```
+
+module path 同时承担全局身份和下载地址的作用。因此仓库内导入也要改为：
+
+```go
+import "github.com/alice/fastgo/internal/cli"
+```
+
+迁移现有项目时可以执行：
+
+```powershell
+go mod edit -module github.com/alice/fastgo
+# 将源码中的 example.com/fastgo 替换为 github.com/alice/fastgo
+go mod tidy
+go test ./...
+```
+
+推送 GitHub 后，使用语义化版本标签发布：
+
+```powershell
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+发布公共 Go module 不需要上传到类似 Maven Central 或 PyPI 的中央注册表。使用者请求版本时，Go 工具链会根据 module path 获取代码；公共 Go proxy 通常会缓存它。
+
+本仓库目前发布的是可执行程序：
+
+```powershell
+go install github.com/alice/fastgo/cmd/fastgo@v0.1.0
+```
+
+如果希望其他项目通过 `import` 使用代码，需要提供非 `internal`、非 `main` 的公开 package，例如：
+
+```text
+fastgo/
+├── client/              # package client，允许外部 import
+│   └── client.go
+├── internal/            # 只允许本仓库规定范围内的代码 import
+└── cmd/fastgo/          # package main，只负责生成程序
+```
+
+外部项目随后可以执行并导入：
+
+```powershell
+go get github.com/alice/fastgo@v0.1.0
+```
+
+```go
+import "github.com/alice/fastgo/client"
+```
+
+公开 API 的标识符必须以大写字母开头，并应有稳定语义和文档注释。不要为了“允许 import”而把所有内部实现公开。
+
+版本规则还需要注意：
+
+- `v0` 表示 API 尚不稳定；`v1` 表示承诺兼容；
+- `v0`、`v1` 的 module path 不带版本后缀；
+- 从 `v2` 开始，module path 和 import path 都需要 `/v2`，例如 `github.com/alice/fastgo/v2`；
+- GitHub Release 页面不是 Go module 发布的必要条件，正确的 Git tag 才是版本解析的关键；
+- 删除或重写已经公开的 tag 会破坏可重复构建，不应这样做。
+
+发布前至少检查：`LICENSE`、`README`、公开 API 文档、`go test ./...`、`go vet ./...`，以及 tag 是否指向预期 commit。
+
 ## 本章验收清单
 
 - [x] `go fmt ./...` 没有遗留格式变化；

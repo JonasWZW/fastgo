@@ -27,6 +27,8 @@
 - module 是依赖版本和导入路径的发布/构建边界，由 `go.mod` 定义；可类比 Maven module 或一个 Python distribution project。
 - package 是代码编译与可见性的基本单位，通常对应一个目录；更接近 Java package，但 Go 的同目录非测试 `.go` 文件必须属于同一个 package。
 - 一个 module 通常包含多个 package。
+- 对 GitHub 项目，module path 通常就是 `github.com/<owner>/<repo>`；它也是使用者执行 `go get` 时采用的全局身份。
+- 仓库中的 `internal` package 不能作为外部公共 API；可执行入口 `package main` 也不是库 API。可复用能力应放到命名清晰的公开 package。
 
 ### Go 的工程化高度依赖统一工具链
 

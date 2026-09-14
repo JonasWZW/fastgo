@@ -4,7 +4,7 @@ package main
 import (
 	"os"
 
-	"example.com/fastgo/internal/cli"
+	"github.com/JonasWZW/fastgo/internal/cli"
 )
 
 func main() {

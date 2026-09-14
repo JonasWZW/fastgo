@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"io"
 
-	"example.com/fastgo/internal/buildinfo"
+	"github.com/JonasWZW/fastgo/internal/buildinfo"
 )
 
 // Run executes the CLI and returns a process exit code.
